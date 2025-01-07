@@ -4,6 +4,13 @@ import Emitter from '../core/emitter.js';
 import Module from '../core/module.js';
 import type { Range } from '../core/selection.js';
 
+declare global {
+  interface Document {
+    caretPositionFromPoint(x: number, y: number): { offsetNode: Node; offset: number } | null;
+    caretRangeFromPoint(x: number, y: number): globalThis.Range | null;
+  }
+}
+
 interface UploaderOptions {
   mimetypes: string[];
   handler: (this: { quill: Quill }, range: Range, files: File[]) => void;
@@ -19,13 +26,13 @@ class Uploader extends Module<UploaderOptions> {
       let native: ReturnType<typeof document.createRange> | null = null;
       if (document.caretRangeFromPoint) {
         native = document.caretRangeFromPoint(e.clientX, e.clientY);
-        // @ts-expect-error
       } else if (document.caretPositionFromPoint) {
-        // @ts-expect-error
         const position = document.caretPositionFromPoint(e.clientX, e.clientY);
-        native = document.createRange();
-        native.setStart(position.offsetNode, position.offset);
-        native.setEnd(position.offsetNode, position.offset);
+        if (position) {
+          native = document.createRange();
+          native.setStart(position.offsetNode, position.offset);
+          native.setEnd(position.offsetNode, position.offset);
+        }
       }
 
       const normalized = native && quill.selection.normalizeNative(native);

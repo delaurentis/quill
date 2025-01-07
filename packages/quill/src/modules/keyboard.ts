@@ -186,12 +186,16 @@ class Keyboard extends Module<KeyboardOptions> {
       const matches = bindings.filter((binding) =>
         Keyboard.match(evt, binding),
       );
-      if (matches.length === 0) return;
+      const range = this.quill.getSelection();
+      if (range == null || !this.quill.hasFocus()) return;
+      if (matches.length === 0) {
+        // Customized for TextJam: Allows us to prevent typing in read-only areas
+        this.handleUnboundKeyEvent(evt, range);
+        return;
+      }
       // @ts-expect-error
       const blot = Quill.find(evt.target, true);
       if (blot && blot.scroll !== this.quill.scroll) return;
-      const range = this.quill.getSelection();
-      if (range == null || !this.quill.hasFocus()) return;
       const [line, offset] = this.quill.getLine(range.index);
       const [leafStart, offsetStart] = this.quill.getLeaf(range.index);
       const [leafEnd, offsetEnd] =
@@ -215,6 +219,7 @@ class Keyboard extends Module<KeyboardOptions> {
         suffix: suffixText,
         event: evt,
       };
+      
       const prevented = matches.some((binding) => {
         if (
           binding.collapsed != null &&
@@ -259,10 +264,14 @@ class Keyboard extends Module<KeyboardOptions> {
         // @ts-expect-error Fix me later
         return binding.handler.call(this, range, curContext, binding) !== true;
       });
+
       if (prevented) {
         evt.preventDefault();
       }
     });
+  }
+
+  handleUnboundKeyEvent(evt: KeyboardEvent, range: Range) {
   }
 
   handleBackspace(range: Range, context: Context) {
