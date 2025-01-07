@@ -193,6 +193,9 @@ class Keyboard extends Module<KeyboardOptions> {
         this.handleUnboundKeyEvent(evt, range);
         return;
       }
+      else if (!this.handleBoundKeyEvent(evt, range)) {
+        return;
+      }
       // @ts-expect-error
       const blot = Quill.find(evt.target, true);
       if (blot && blot.scroll !== this.quill.scroll) return;
@@ -272,6 +275,10 @@ class Keyboard extends Module<KeyboardOptions> {
   }
 
   handleUnboundKeyEvent(evt: KeyboardEvent, range: Range) {
+  }
+
+  handleBoundKeyEvent(evt: KeyboardEvent, range: Range) {
+    return true;
   }
 
   handleBackspace(range: Range, context: Context) {
