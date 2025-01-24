@@ -15,7 +15,10 @@
     "moduleResolution": "bundler",
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "jsx": "react",
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"]
 }
