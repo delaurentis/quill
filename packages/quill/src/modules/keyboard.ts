@@ -390,6 +390,24 @@ class Keyboard extends Module<KeyboardOptions> {
     });*/
 
   }
+
+  handleEnterOnCheckedListItem(range: Range, context: Context) {
+    const [line, offset] = this.quill.getLine(range.index);
+    const formats = {
+      // @ts-expect-error Fix me later
+      ...line.formats(),
+      list: 'checked',
+    };
+    const delta = new Delta()
+      .retain(range.index)
+      .insert('\n', formats)
+      // @ts-expect-error Fix me later
+      .retain(line.length() - offset - 1)
+      .retain(1, { list: 'unchecked' });
+    this.quill.updateContents(delta, Quill.sources.USER);
+    this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
+    this.quill.scrollSelectionIntoView();
+  }
 }
 
 const defaultOptions: KeyboardOptions = {
@@ -492,22 +510,9 @@ const defaultOptions: KeyboardOptions = {
       key: 'Enter',
       collapsed: true,
       format: { list: 'checked' },
-      handler(range) {
-        const [line, offset] = this.quill.getLine(range.index);
-        const formats = {
-          // @ts-expect-error Fix me later
-          ...line.formats(),
-          list: 'checked',
-        };
-        const delta = new Delta()
-          .retain(range.index)
-          .insert('\n', formats)
-          // @ts-expect-error Fix me later
-          .retain(line.length() - offset - 1)
-          .retain(1, { list: 'unchecked' });
-        this.quill.updateContents(delta, Quill.sources.USER);
-        this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
-        this.quill.scrollSelectionIntoView();
+      handler(range, context) {
+        const keyboard = this.quill.getModule('keyboard') as Keyboard;
+        return keyboard.handleEnterOnCheckedListItem(range, context);
       },
     },
     'header enter': {
