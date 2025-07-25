@@ -158,7 +158,7 @@ class Quill {
       const overwrite = !!args[2];
 
       if (this.imports[path] != null && !overwrite) {
-        debug.warn(`Overwriting ${path} with`, target);
+        // debug.warn(`Overwriting ${path} with`, target);
       }
       this.imports[path] = target;
       if (
