@@ -408,6 +408,19 @@ class Keyboard extends Module<KeyboardOptions> {
     this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
     this.quill.scrollSelectionIntoView();
   }
+
+  handleEnterOnHeaderLine(range: Range, context: Context) {
+    const [line, offset] = this.quill.getLine(range.index);
+    const delta = new Delta()
+      .retain(range.index)
+      .insert('\n', context.format)
+      // @ts-expect-error Fix me later
+      .retain(line.length() - offset - 1)
+      .retain(1, { header: null });
+    this.quill.updateContents(delta, Quill.sources.USER);
+    this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
+    this.quill.scrollSelectionIntoView();
+  }
 }
 
 const defaultOptions: KeyboardOptions = {
@@ -521,16 +534,8 @@ const defaultOptions: KeyboardOptions = {
       format: ['header'],
       suffix: /^$/,
       handler(range, context) {
-        const [line, offset] = this.quill.getLine(range.index);
-        const delta = new Delta()
-          .retain(range.index)
-          .insert('\n', context.format)
-          // @ts-expect-error Fix me later
-          .retain(line.length() - offset - 1)
-          .retain(1, { header: null });
-        this.quill.updateContents(delta, Quill.sources.USER);
-        this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
-        this.quill.scrollSelectionIntoView();
+        const keyboard = this.quill.getModule('keyboard') as Keyboard;
+        return keyboard.handleEnterOnHeaderLine(range, context);
       },
     },
     'table backspace': {
